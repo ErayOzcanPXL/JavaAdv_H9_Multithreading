@@ -6,34 +6,39 @@ import java.util.LinkedList;
 public class DivisorCounter extends Thread {
     public static void main(String[] args) {
         List<DivisorCounter> divisorCounters = new LinkedList<>();
-        int minimum = 1, maximum = 50000;
-        int threadCount = 10;
+        int minimum = 1, maximum = 100000;
+        int threadCount = 20;
         int increaseValue = maximum / threadCount;
         int startRange = minimum, endRange = increaseValue;
+        DivisorCounter divisorCounter = null;
 
         long startTime = System.currentTimeMillis();
         for (int i = 0; i < threadCount; i++) {
-            DivisorCounter divisorCounter = new DivisorCounter(startRange, endRange);
+            divisorCounter = new DivisorCounter(startRange, endRange);
             divisorCounter.start();
             startRange += increaseValue;
             endRange += increaseValue;
 
+            divisorCounters.add(divisorCounter);
+        }
+
+        divisorCounters.forEach(counter -> {
             try {
-                divisorCounter.join();
-                divisorCounters.add(divisorCounter);
+                counter.join();
             } catch(InterruptedException exception) {
                 exception.printStackTrace();
             }
-        }
+        });
+
         long endTime = System.currentTimeMillis();
         double calculationTime = (double) (endTime - startTime) / 1000;
 
         int highestCount = divisorCounters.stream()
-            .mapToInt(divisorCounter -> divisorCounter.getHighestDivisor()[1])
+            .mapToInt(counter -> counter.getHighestDivisor()[1])
             .max().getAsInt();
 
         DivisorCounter highestDivisorCounter = divisorCounters.stream()
-                .filter(divisorCounter -> divisorCounter.getHighestDivisor()[1] == highestCount)
+                .filter(counter -> counter.getHighestDivisor()[1] == highestCount)
                 .findFirst()
                 .get();
 
